@@ -25,7 +25,7 @@ dates = [f"{i}.05.2023" for i in range(10, 17)]
 for arrival_uuid in arrival_uuids:
 
     with open(f"to_{arrival_uuid}.json", "a") as file:
-        file.write('"result": [')
+        file.write('{"result": [')
 
     for departure_uuid in departure_uuids:
         for date in dates:
@@ -35,13 +35,15 @@ for arrival_uuid in arrival_uuids:
             print(response.status_code)
             print(response.text)
 
-            with open(f"to_{arrival_uuid}.json", "a") as file:
-                file.write(json.dumps(response.json()["trips"][0]["results"]))
-                file.write(", ")
+            if response.json()["trips"][0]["results"]:
+                with open(f"to_{arrival_uuid}.json", "a") as file:
+                    file.write(json.dumps(response.json()["trips"][0]["results"]))
+                    if (date != dates[-1]) and (departure_uuid != departure_uuids[-1]):
+                        file.write(", ")
 
 with open(f"to_{arrival_uuid}.json", "a") as file:
-    file.write(']')
-
+    file.write(']}')
+ 
 
 '''response = requests.get("https://global.api.flixbus.com/search/service/v4/search?from_city_id=40de8964-8646-11e6-9066-549f350fcb0c&to_city_id=40d911c7-8646-11e6-9066-549f350fcb0c&departure_date=23.04.2023&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&search_by=cities&include_after_midnight_rides=1")
 
