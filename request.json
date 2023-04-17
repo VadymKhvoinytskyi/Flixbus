@@ -1,0 +1,23 @@
+{
+    "language": "en",
+    "departure_cities": [
+        "duesseldorf",
+        "moenchengladbach",
+        "cologne",
+        "aachen",
+        "venlo"
+    ],
+    "arrival_cities": [
+        "Paris"
+    ],
+    "dates": [
+        "12.05.2023",
+        "13.05.2023",
+        "14.05.2023"
+    ],
+    "passenger_number": {
+        "adult": 2,
+        "children": 0,
+        "bike_slot": 0
+    }
+}
