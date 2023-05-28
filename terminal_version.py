@@ -54,6 +54,5 @@ if __name__ == "__main__":
         )
     trips = sorted(trips, key=lambda x: x[1], reverse=True)
     for trip in trips:
-        print(trip)
-        print("\n")
+        print(trip, end='\n\n')
  
