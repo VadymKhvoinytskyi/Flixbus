@@ -2,28 +2,29 @@ import requests
 import json
 
 
-def main(departure_names: list, arrival_names: list, dates: list,  dict_uuids: dict) -> list:
-    departure_uuids = [dict_uuids[name] for name in departure_names]
-    arrival_uuids = [dict_uuids[name] for name in arrival_names]
+def get_trips(departure_names: list, arrival_names: list, dates: list,  dict_uuids: dict) -> list:
     result_trips = []
-    
-    for arrival_uuid in arrival_uuids:
-        for departure_uuid in departure_uuids:
-            departure_city = [key for key, value in dict_uuids.items() if value == departure_uuid][0]
-            arrival_city = [key for key, value in dict_uuids.items() if value == arrival_uuid][0]
+    i = 0
+    n = len(departure_names) * len(arrival_names) * len(dates)
+
+    for arrival_name in arrival_names:
+        for departure_name in departure_names:
+
+            arrival_uuid, departure_uuid = dict_uuids[arrival_name], dict_uuids[departure_name]
             for date in dates:
                 url = f"https://global.api.flixbus.com/search/service/v4/search?from_city_id={departure_uuid}&to_city_id={arrival_uuid}&departure_date={date}&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&search_by=cities&include_after_midnight_rides=1"
                 response = requests.get(url)
-                print(response.status_code)
+                # print(response.status_code)
+                print(f"{'#' * int(i // (n / 20))}")
+                i += 1
 
                 if response.status_code == 200:
                     response_json = response.json()["trips"][0]
                     results_json = response_json["results"]
                     
-                    # f"{response_json['departure_city_id']}-{response_json['arrival_city_id']}",
                     for key in results_json:
                         result_trips.append([
-                            f"{departure_city} - {arrival_city}",
+                            f"{departure_name} - {arrival_name}",
                             results_json[key]['price']['average'],
                             results_json[key]['departure']['date'],
                             results_json[key]['arrival']['date'],
@@ -41,10 +42,11 @@ if __name__ == "__main__":
         "Brussel": "40de6287-8646-11e6-9066-549f350fcb0c",
         "Barcelona": "40e086ed-8646-11e6-9066-549f350fcb0c",
         "Rotterdam": "40dee83e-8646-11e6-9066-549f350fcb0c",
-        "Berlin": "40d8f682-8646-11e6-9066-549f350fcb0c"
+        "Berlin": "40d8f682-8646-11e6-9066-549f350fcb0c",
+        "Kyiv": "183cda51-3912-4707-95af-05238cd58ab8"
     }
-    dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(1, 31)]
-    trips = main(
+    dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(1, 10)]
+    trips = get_trips(
         departure_names=["Duesseldorf", "Cologne", "Moenchengladbach"], 
         arrival_names=["Berlin"], 
         dates=dates_departure, 
