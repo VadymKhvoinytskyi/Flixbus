@@ -4,7 +4,7 @@ import sqlite3
 
 def get_trips(departure_names: list[str], 
               arrival_names: list[str],  dict_uuids: dict[str: str], 
-              dates: list[str]) -> list[list[str, str, float, str, str, str]]:
+              dates: list[str]) -> list[list[str, str, float, str, str, str, str]]:
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
@@ -29,6 +29,7 @@ def get_trips(departure_names: list[str],
                             results_json[key]['price']['average'],
                             results_json[key]['departure']['date'],
                             results_json[key]['arrival']['date'],
+                            results_json[key]['transfer_type_key'],
                             f"https://shop.flixbus.ua/search?departureCity={departure_uuid}&arrivalCity={arrival_uuid}&rideDate={date}&adult=2&_locale=uk&features%5Bfeature.darken_page%5D=1&features%5Bfeature.enable_distribusion%5D=1&features%5Bfeature.train_cities_only%5D=0&features%5Bfeature.webc_search_persistent_explore_map%5D=0&atb_pdid=cc861ad2-ab97-43a7-971e-623e0c66e29f&_sp=1c858985-ce9b-4a8e-9e59-e4f41512f0b7&_spnuid=af71e384-6ff1-4a74-b031-8e7851f5e897"
                         ])
     return result_trips
@@ -60,5 +61,5 @@ if __name__ == "__main__":
       )
     trips = sorted(trips, key=lambda x: x[2], reverse=True)
     for trip in trips:
-        print(trip[0: 5], end='\n\n')
+        print(trip[0: 6], end='\n\n')
  
