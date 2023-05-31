@@ -1,20 +1,16 @@
 import requests
-import json
 
-
-def get_trips(departure_names: list, arrival_names: list, dates: list,  dict_uuids: dict) -> list:
+def get_trips(departure_names: list[str], arrival_names: list[str], dates: list[str],  dict_uuids: dict[str: str]) -> list[list[str, str, float, str, str, str]]:
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
 
     for arrival_name in arrival_names:
         for departure_name in departure_names:
-
             arrival_uuid, departure_uuid = dict_uuids[arrival_name], dict_uuids[departure_name]
             for date in dates:
                 url = f"https://global.api.flixbus.com/search/service/v4/search?from_city_id={departure_uuid}&to_city_id={arrival_uuid}&departure_date={date}&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&search_by=cities&include_after_midnight_rides=1"
                 response = requests.get(url)
-                # print(response.status_code)
                 print(f"{'#' * int(i // (n / 20))}")
                 i += 1
 
@@ -24,7 +20,8 @@ def get_trips(departure_names: list, arrival_names: list, dates: list,  dict_uui
                     
                     for key in results_json:
                         result_trips.append([
-                            f"{departure_name} - {arrival_name}",
+                            departure_name,
+                            arrival_name,
                             results_json[key]['price']['average'],
                             results_json[key]['departure']['date'],
                             results_json[key]['arrival']['date'],
@@ -37,22 +34,24 @@ if __name__ == "__main__":
         "Duesseldorf": "40d911c7-8646-11e6-9066-549f350fcb0c",
         "Cologne": "40d91025-8646-11e6-9066-549f350fcb0c", 
         "Moenchengladbach": "40da838e-8646-11e6-9066-549f350fcb0c",
+        "Aachen": "40da8ddc-8646-11e6-9066-549f350fcb0c",
         "Paris": "40de8964-8646-11e6-9066-549f350fcb0c",
         "Amsterdam": "40dde3b8-8646-11e6-9066-549f350fcb0c",
         "Brussel": "40de6287-8646-11e6-9066-549f350fcb0c",
         "Barcelona": "40e086ed-8646-11e6-9066-549f350fcb0c",
         "Rotterdam": "40dee83e-8646-11e6-9066-549f350fcb0c",
         "Berlin": "40d8f682-8646-11e6-9066-549f350fcb0c",
-        "Kyiv": "183cda51-3912-4707-95af-05238cd58ab8"
+        "Kyiv": "183cda51-3912-4707-95af-05238cd58ab8",
+        "Luxembourg": "40da71d6-8646-11e6-9066-549f350fcb0c"
     }
-    dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(1, 10)]
+    dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(3, 31, 7)]
     trips = get_trips(
-        departure_names=["Duesseldorf", "Cologne", "Moenchengladbach"], 
-        arrival_names=["Berlin"], 
+        departure_names=["Duesseldorf", "Cologne", "Aachen", "Moenchengladbach"], 
+        arrival_names=["Luxembourg"], 
         dates=dates_departure, 
         dict_uuids=uuids
-        )
-    trips = sorted(trips, key=lambda x: x[1], reverse=True)
+      )
+    trips = sorted(trips, key=lambda x: x[2], reverse=True)
     for trip in trips:
-        print(trip, end='\n\n')
+        print(trip[0: 5], end='\n\n')
  
