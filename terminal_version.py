@@ -2,12 +2,7 @@ import requests
 from pathlib import Path
 import sqlite3
 
-def get_trips(
-    departure_names: list[str], 
-    arrival_names: list[str],  
-    dict_uuids: dict[str: str], 
-    dates: list[str]
-) -> list[list[str, str, float, str, str, str]]:
+def get_trips(departure_names: list[str], arrival_names: list[str],  dict_uuids: dict[str: str], dates: list[str]) -> list[list[str, str, float, str, str, str]]:
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
@@ -36,6 +31,7 @@ def get_trips(
                         ])
     return result_trips
 
+
 def get_uuids_from_db(departure_names: list[str], arrival_names: list[str], db = 'uuid_hash.db') -> dict[str: str]:
     cities = departure_names + arrival_names
     db_route = Path.cwd() / db
@@ -47,6 +43,7 @@ def get_uuids_from_db(departure_names: list[str], arrival_names: list[str], db =
     con.close()
 
     return dict(res)
+
 
 if __name__ == "__main__":
     departure = ["Duesseldorf", "Cologne", "Aachen", "Moenchengladbach"]
