@@ -1,6 +1,13 @@
 import requests
+from pathlib import Path
+import sqlite3
 
-def get_trips(departure_names: list[str], arrival_names: list[str], dates: list[str],  dict_uuids: dict[str: str]) -> list[list[str, str, float, str, str, str]]:
+def get_trips(
+    departure_names: list[str], 
+    arrival_names: list[str],  
+    dict_uuids: dict[str: str], 
+    dates: list[str]
+) -> list[list[str, str, float, str, str, str]]:
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
@@ -29,27 +36,27 @@ def get_trips(departure_names: list[str], arrival_names: list[str], dates: list[
                         ])
     return result_trips
 
+def get_uuids_from_db(departure_names: list[str], arrival_names: list[str], db = 'uuid_hash.db') -> dict[str: str]:
+    cities = departure_names + arrival_names
+    db_route = Path.cwd() / db
+    con = sqlite3.connect(db_route)
+    cur = con.cursor()
+    res = cur.execute(f'SELECT * FROM UUIDS WHERE City in {tuple(cities)}')
+    res = res.fetchall()
+    con.commit()
+    con.close()
+
+    return dict(res)
+
 if __name__ == "__main__":
-    uuids = {
-        "Duesseldorf": "40d911c7-8646-11e6-9066-549f350fcb0c",
-        "Cologne": "40d91025-8646-11e6-9066-549f350fcb0c", 
-        "Moenchengladbach": "40da838e-8646-11e6-9066-549f350fcb0c",
-        "Aachen": "40da8ddc-8646-11e6-9066-549f350fcb0c",
-        "Paris": "40de8964-8646-11e6-9066-549f350fcb0c",
-        "Amsterdam": "40dde3b8-8646-11e6-9066-549f350fcb0c",
-        "Brussel": "40de6287-8646-11e6-9066-549f350fcb0c",
-        "Barcelona": "40e086ed-8646-11e6-9066-549f350fcb0c",
-        "Rotterdam": "40dee83e-8646-11e6-9066-549f350fcb0c",
-        "Berlin": "40d8f682-8646-11e6-9066-549f350fcb0c",
-        "Kyiv": "183cda51-3912-4707-95af-05238cd58ab8",
-        "Luxembourg": "40da71d6-8646-11e6-9066-549f350fcb0c"
-    }
+    departure = ["Duesseldorf", "Cologne", "Aachen", "Moenchengladbach"]
+    arrival = ["Luxembourg"]
     dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(3, 31, 7)]
     trips = get_trips(
-        departure_names=["Duesseldorf", "Cologne", "Aachen", "Moenchengladbach"], 
-        arrival_names=["Luxembourg"], 
-        dates=dates_departure, 
-        dict_uuids=uuids
+        departure_names=departure, 
+        arrival_names=arrival, 
+        dict_uuids=get_uuids_from_db(departure, arrival),
+        dates=dates_departure
       )
     trips = sorted(trips, key=lambda x: x[2], reverse=True)
     for trip in trips:
