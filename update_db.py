@@ -1,30 +1,27 @@
 import sqlite3
+import requests
 from pathlib import Path
 
-def add_initial_data():
+def add_data(uuids: dict[str: str]) -> None:
     route = Path.cwd() / 'uuid_hash.db'
     con = sqlite3.connect(route)
     cur = con.cursor()
 
-    uuids = {
-            "Duesseldorf": "40d911c7-8646-11e6-9066-549f350fcb0c",
-            "Cologne": "40d91025-8646-11e6-9066-549f350fcb0c", 
-            "Moenchengladbach": "40da838e-8646-11e6-9066-549f350fcb0c",
-            "Aachen": "40da8ddc-8646-11e6-9066-549f350fcb0c",
-            "Paris": "40de8964-8646-11e6-9066-549f350fcb0c",
-            "Amsterdam": "40dde3b8-8646-11e6-9066-549f350fcb0c",
-            "Brussel": "40de6287-8646-11e6-9066-549f350fcb0c",
-            "Barcelona": "40e086ed-8646-11e6-9066-549f350fcb0c",
-            "Rotterdam": "40dee83e-8646-11e6-9066-549f350fcb0c",
-            "Berlin": "40d8f682-8646-11e6-9066-549f350fcb0c",
-            "Kyiv": "183cda51-3912-4707-95af-05238cd58ab8",
-            "Luxembourg": "40da71d6-8646-11e6-9066-549f350fcb0c"
-        }
-
     for key, value in uuids.items():
-        cur.execute(f'INSERT INTO UUIDS VALUES ("{key}", "{value}");')
+        try:
+            cur.execute(f'INSERT INTO UUIDS VALUES ("{key}", "{value}");')
+        except:
+            pass
         
     con.commit()
     con.close()
 
-add_initial_data()
+user_input = input('Write country code(like UA) to download uuids.\n')
+response = requests.get(
+    'https://global.api.flixbus.com/cms/cities', 
+    {'language': 'en', 'country': f'{user_input}'}
+)
+response_uuids = {res['slug'].capitalize(): res['uuid'] for res in response.json()['result']}
+add_data(response_uuids)
+print(f'Were added the following data: \n {response_uuids}')
+
