@@ -1,10 +1,13 @@
 import requests
 from pathlib import Path
 import sqlite3
+import pandas as pd
+from datetime import datetime
 
 def get_trips(departure_names: list[str], 
               arrival_names: list[str],  dict_uuids: dict[str: str], 
               dates: list[str]) -> list[list[str, str, float, str, str, str, str]]:
+    
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
@@ -50,15 +53,19 @@ def get_uuids_from_db(departure_names: list[str], arrival_names: list[str],
 
 
 if __name__ == "__main__":
-    departure = ["Duesseldorf", "Cologne", "Aachen", "Moenchengladbach"]
-    arrival = ["Luxembourg"]
-    dates_departure = [f"{0 if i < 10 else ''}{i}.06.2023" for i in range(3, 31, 7)]
+    departure = ["Warsaw", "Berlin"]
+    arrival = ["Kyiv"]
+    uuids = get_uuids_from_db(departure, arrival)
+    # dates_departure = [f"{0 if i < 10 else ''}{i}.08.2023" for i in range(1, 8)]
+    dates_departure = [f"{i.strftime('%d.%m.%Y')}" for i in pd.date_range(start="01/01/2024", end="01/31/2024")]
+    
     trips = get_trips(
         departure_names=departure, 
         arrival_names=arrival, 
-        dict_uuids=get_uuids_from_db(departure, arrival),
+        dict_uuids=uuids,
         dates=dates_departure
       )
+    
     trips = sorted(trips, key=lambda x: x[2], reverse=True)
     for trip in trips:
         print(trip[0: 6], end='\n\n')
