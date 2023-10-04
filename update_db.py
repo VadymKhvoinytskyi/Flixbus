@@ -16,12 +16,13 @@ def add_data(uuids: dict[str: str]) -> None:
     con.commit()
     con.close()
 
-user_input = input('Write country code(like UA) to download uuids.\n')
-response = requests.get(
-    'https://global.api.flixbus.com/cms/cities', 
-    {'language': 'en', 'country': f'{user_input}'}
-)
-response_uuids = {res['slug'].capitalize(): res['uuid'] for res in response.json()['result']}
-add_data(response_uuids)
-print(f'Were added the following data: \n {response_uuids}')
+def ask_add_data():
+    user_input = input('Write country code(like UA) to download uuids.\n')
+    response = requests.get(
+        'https://global.api.flixbus.com/cms/cities', 
+        {'language': 'en', 'country': f'{user_input}'}
+    )
+    response_uuids = {res['slug'].capitalize(): res['uuid'] for res in response.json()['result']}
+    add_data(response_uuids)
+    print(f'Were added the following data: \n {response_uuids}')
 
