@@ -23,9 +23,8 @@ def get_trips(departure_names: list[str],
                 i += 1
 
                 if response.status_code == 200:
-                    response_json = response.json()["trips"][0]
-                    results_json = response_json["results"]
-                    
+                    results_json = response.json()["trips"][0]["results"]
+
                     for key in results_json:
                         result_trips.append([
                             departure_name,
@@ -39,8 +38,11 @@ def get_trips(departure_names: list[str],
     return result_trips
 
 
-def get_uuids_from_db(departure_names: list[str], arrival_names: list[str], 
-                      db = 'uuid_hash.db') -> dict[str: str]:
+def get_uuids_from_db(
+        departure_names: list[str], 
+        arrival_names: list[str], 
+        db = 'uuid_hash.db'
+    ) -> dict[str: str]:
     cities = departure_names + arrival_names
     db_route = Path.cwd() / db
     con = sqlite3.connect(db_route)
@@ -51,7 +53,7 @@ def get_uuids_from_db(departure_names: list[str], arrival_names: list[str],
     con.close()
     return dict(res)
 
-def ask_cities(default = ["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"], departure=True) -> list:
+def ask_cities(default=["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"], departure=True) -> list:
     answer = input(f"Write {'a departure' if departure else 'an arrival'} cities in komma separated format or use default one: \n")
     if not answer or (answer == 'default'):
         return default
@@ -84,7 +86,6 @@ if __name__ == "__main__":
     departure = ask_cities(departure=True)
     arrival = ask_cities(departure=False)
     uuids = get_uuids_from_db(departure, arrival)
-    # dates_departure = [f"{0 if i < 10 else ''}{i}.08.2023" for i in range(1, 8)]
     dates_input = input("Write desirable dates komma separated or interval with dash: \n")
     dates_departure = get_dates(dates_input)
     
