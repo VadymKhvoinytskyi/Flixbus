@@ -3,6 +3,7 @@ from pathlib import Path
 import sqlite3
 import pandas as pd
 from datetime import datetime
+from update_db import ask_add_data
 
 def get_trips(departure_names: list[str], 
               arrival_names: list[str],  dict_uuids: dict[str: str], 
@@ -22,9 +23,8 @@ def get_trips(departure_names: list[str],
                 i += 1
 
                 if response.status_code == 200:
-                    response_json = response.json()["trips"][0]
-                    results_json = response_json["results"]
-                    
+                    results_json = response.json()["trips"][0]["results"]
+
                     for key in results_json:
                         result_trips.append([
                             departure_name,
@@ -38,8 +38,11 @@ def get_trips(departure_names: list[str],
     return result_trips
 
 
-def get_uuids_from_db(departure_names: list[str], arrival_names: list[str], 
-                      db = 'uuid_hash.db') -> dict[str: str]:
+def get_uuids_from_db(
+        departure_names: list[str], 
+        arrival_names: list[str], 
+        db = 'uuid_hash.db'
+    ) -> dict[str: str]:
     cities = departure_names + arrival_names
     db_route = Path.cwd() / db
     con = sqlite3.connect(db_route)
@@ -48,16 +51,43 @@ def get_uuids_from_db(departure_names: list[str], arrival_names: list[str],
     res = res.fetchall()
     con.commit()
     con.close()
-
     return dict(res)
+
+def ask_cities(default=["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"], departure=True) -> list:
+    answer = input(f"Write {'a departure' if departure else 'an arrival'} cities in komma separated format or use default one: \n")
+    if not answer or (answer == 'default'):
+        return default
+    else:
+        return [city.strip().capitalize() for city in answer.split(",")]
+
+    
+def get_dates(dates: str) -> list[str]:
+    if ',' in dates:
+        dates = dates.split(',')
+        dates = [i.strip() for i in dates]
+    else:
+        dates = [dates]
+
+    result = []
+    for date in dates:
+        if '-' in date:
+            date = date.split('-')
+            date = [f"{i.strftime('%d.%m.%Y')}" for i in pd.date_range(start=date[0].strip(), end=date[1].strip())]
+            result.extend(date)
+        else:
+            result.append(date)
+    return result
 
 
 if __name__ == "__main__":
-    departure = ["Warsaw", "Berlin"]
-    arrival = ["Kyiv"]
+    if input('Would you like to update data first?(y/n): ').lower() == 'y':
+        ask_add_data()
+    print()
+    departure = ask_cities(departure=True)
+    arrival = ask_cities(departure=False)
     uuids = get_uuids_from_db(departure, arrival)
-    # dates_departure = [f"{0 if i < 10 else ''}{i}.08.2023" for i in range(1, 8)]
-    dates_departure = [f"{i.strftime('%d.%m.%Y')}" for i in pd.date_range(start="01/01/2024", end="01/31/2024")]
+    dates_input = input("Write desirable dates komma separated or interval with dash: \n")
+    dates_departure = get_dates(dates_input)
     
     trips = get_trips(
         departure_names=departure, 
@@ -68,5 +98,5 @@ if __name__ == "__main__":
     
     trips = sorted(trips, key=lambda x: x[2], reverse=True)
     for trip in trips:
-        print(trip[0: 6], end='\n\n')
+        print(trip[0: 7], end='\n\n')
  
