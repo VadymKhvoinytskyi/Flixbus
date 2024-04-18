@@ -82,7 +82,7 @@ def get_uuids_from_db(
     return dict(res)
 
 def get_cities_from_str(
-    answer: str, 
+    answer: str='default', 
     default: list=["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"]
 ) -> list[str]:
     if not answer or (answer == 'default'):
