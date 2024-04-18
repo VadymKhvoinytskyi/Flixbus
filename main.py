@@ -1,8 +1,9 @@
 import requests
+from datetime import datetime
 from pathlib import Path
+
 import sqlite3
 import pandas as pd
-from datetime import datetime
 from update_db import ask_add_data
 
 def get_trips(departure_names: list[str], 
@@ -15,26 +16,53 @@ def get_trips(departure_names: list[str],
 
     for arrival_name in arrival_names:
         for departure_name in departure_names:
-            arrival_uuid, departure_uuid = dict_uuids[arrival_name], dict_uuids[departure_name]
+            arrival_uuid = dict_uuids[arrival_name]
+            departure_uuid = dict_uuids[departure_name]
             for date in dates:
-                url = f"https://global.api.flixbus.com/search/service/v4/search?from_city_id={departure_uuid}&to_city_id={arrival_uuid}&departure_date={date}&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&search_by=cities&include_after_midnight_rides=1"
+                url = (
+                    f"https://global.api.flixbus.com/search/service/v4/"
+                    f"search?from_city_id={departure_uuid}&"
+                    f"to_city_id={arrival_uuid}&departure_date={date}"
+                    f"&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&"
+                    f"search_by=cities&include_after_midnight_rides=1"
+                )
                 response = requests.get(url)
                 print(f"{'#' * int(i // (n / 20))}")
                 i += 1
 
-                if response.status_code == 200:
-                    results_json = response.json()["trips"][0]["results"]
+                if response.status_code != 200:
+                    print(response.reason)
+                    print(
+                        f"Failed request for {departure_name} {arrival_name}"
+                        f" {date}, status code: {response.status_code}"
+                        
+                    )
+                    break
 
-                    for key in results_json:
-                        result_trips.append({
-                            'departure': departure_name,
-                            'arrival' : arrival_name,
-                            'price' : results_json[key]['price']['average'],
-                            'departure date' : results_json[key]['departure']['date'],
-                            'arrival date' : results_json[key]['arrival']['date'],
-                            'transfer type' : results_json[key]['transfer_type_key'],
-                            'link' : f"https://shop.flixbus.ua/search?departureCity={departure_uuid}&arrivalCity={arrival_uuid}&rideDate={date}&adult=2&_locale=uk&features%5Bfeature.darken_page%5D=1&features%5Bfeature.enable_distribusion%5D=1&features%5Bfeature.train_cities_only%5D=0&features%5Bfeature.webc_search_persistent_explore_map%5D=0&atb_pdid=cc861ad2-ab97-43a7-971e-623e0c66e29f&_sp=1c858985-ce9b-4a8e-9e59-e4f41512f0b7&_spnuid=af71e384-6ff1-4a74-b031-8e7851f5e897"
-                        })
+                results_json = response.json()["trips"][0]["results"]
+
+                for key in results_json:
+                    result_trips.append({
+                        'departure': departure_name,
+                        'arrival' : arrival_name,
+                        'price' : results_json[key]['price']['average'],
+                        'departure date' : results_json[key]['departure']['date'],
+                        'arrival date' : results_json[key]['arrival']['date'],
+                        'transfer type' : results_json[key]['transfer_type_key'],
+                        'link' : (
+                            f"https://shop.flixbus.ua/search?"
+                            f"departureCity={departure_uuid}&"
+                            f"arrivalCity={arrival_uuid}&"
+                            f"rideDate={date}&adult=2&"
+                            f"_locale=uk&features%5Bfeature.darken_page%5D=1&"
+                            f"features%5Bfeature.enable_distribusion%5D=1&"
+                            f"features%5Bfeature.train_cities_only%5D=0&"
+                            f"features%5Bfeature.webc_search_persistent_explore_map"
+                            f"%5D=0&atb_pdid=cc861ad2-ab97-43a7-971e-623e0c66e29f&"
+                            f"_sp=1c858985-ce9b-4a8e-9e59-e4f41512f0b7&"
+                            f"_spnuid=af71e384-6ff1-4a74-b031-8e7851f5e897"
+                        )
+                    })
     return result_trips
 
 
@@ -53,7 +81,10 @@ def get_uuids_from_db(
     con.close()
     return dict(res)
 
-def get_cities_from_str(answer: str, default: list=["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"]) -> list[str]:
+def get_cities_from_str(
+    answer: str, 
+    default: list=["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"]
+) -> list[str]:
     if not answer or (answer == 'default'):
         return default
     else:
@@ -70,9 +101,10 @@ def get_dates(dates: str) -> list[str]:
     result = []
     for date in dates:
         if '-' in date:
-            date = date.split('-')
-            date = [f"{i.strftime('%d.%m.%Y')}" for i in pd.date_range(start=date[0].strip(), end=date[1].strip())]
-            result.extend(date)
+            date = [day.strip() for day in date.split('-')]
+            date = [datetime.strptime(day, '%d.%m.%Y') for day in date]
+            date_range = [f"{i.strftime('%d.%m.%Y')}" for i in pd.date_range(start=date[0], end=date[1])]
+            result.extend(date_range)
         else:
             result.append(date)
     return result
