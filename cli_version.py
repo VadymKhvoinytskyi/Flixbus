@@ -1,6 +1,6 @@
 import click
 # from update_db import ask_add_data
-from main import get_trips, get_uuids_from_db, get_cities_from_str, get_dates
+from main import get_trips, get_cities_from_str, get_dates # , get_uuids_from_db
 
 @click.command()
 @click.option('--departure', default='', help='comma separated departure cities')

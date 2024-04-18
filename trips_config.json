@@ -1,0 +1,4 @@
+{
+    "departure": ["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"],
+    "arrival": ["Amsterdam", "Luxembourg", "Rotterdam", "Paris", "Brussel"]
+}
