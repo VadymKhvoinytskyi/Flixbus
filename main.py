@@ -7,9 +7,10 @@ import pandas as pd
 from update_db import ask_add_data
 
 def get_trips(departure_names: list[str], 
-              arrival_names: list[str],  dict_uuids: dict[str: str], 
+              arrival_names: list[str], 
               dates: list[str]) -> list[dict]:
     
+    dict_uuids = get_uuids_from_db(departure_names + arrival_names)
     result_trips = []
     i = 0
     n = len(departure_names) * len(arrival_names) * len(dates)
@@ -67,11 +68,9 @@ def get_trips(departure_names: list[str],
 
 
 def get_uuids_from_db(
-        departure_names: list[str], 
-        arrival_names: list[str], 
+        cities: list[str],
         db_file = 'uuid_hash.db'
     ) -> dict[str: str]:
-    cities = departure_names + arrival_names
     db_route = Path.cwd() / db_file
     con = sqlite3.connect(db_route)
     cur = con.cursor()
