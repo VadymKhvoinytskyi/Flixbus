@@ -67,6 +67,12 @@ def create_calculated_fields(file_name: str='latest.csv') -> None:
 
     df.to_csv(file_name.split('.')[0] + '_enriched.csv', index=False)
 
+def clean_latest_trips_file(file_name: str='latest.csv') -> None:
+    with open(file_name, 'r') as file_read:
+        schema = file_read.readline()
+        with open(file_name, 'w') as file_write:
+            file_write.write(schema)
+
 # download_trips()
 
-create_calculated_fields()
+clean_latest_trips_file()
