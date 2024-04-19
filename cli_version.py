@@ -15,7 +15,8 @@ def main(departure: str, arrival: str, dates: str, link: bool) -> None:
     trips = get_trips(
         departure_names=departure, 
         arrival_names=arrival,
-        dates=dates_departure
+        dates=dates_departure,
+        verbose=True
     )
 
     trips = sorted(trips, key=lambda x: x['price'], reverse=True)
