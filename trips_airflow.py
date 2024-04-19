@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+import pandas as pd
+
 # from update_db import ask_add_data
 from main import get_trips, get_dates # , get_uuids_from_db, get_cities_from_str 
 
@@ -50,4 +52,21 @@ def download_trips(
             trip_line = str(list(trip.values()))[1:-1].replace("'", '')
             file.write(f'{trip_line}\n')
 
-download_trips()
+def number_of_parts(string: str, sep: str='#') -> int:
+    return len(string.split(sep))
+
+def calculate_duration(dates) -> int:
+    return (pd.to_datetime(dates['arrival date']) - pd.to_datetime(dates['departure date'])).total_seconds() / (60 * 60)
+
+def create_calculated_fields(file_name: str='latest.csv') -> None:
+    df = pd.read_csv(file_name, sep=', ', engine='python')
+
+    df['transfer_number'] = df['transfer type'].apply(lambda x: number_of_parts(x)-1)
+    df['duration'] = df[['departure date', 'arrival date']].apply(calculate_duration, axis=1)
+    df['downloaded_date'] = datetime.today().strftime('%d.%m.%Y')
+
+    df.to_csv(file_name.split('.')[0] + '_enriched.csv', index=False)
+
+# download_trips()
+
+create_calculated_fields()
