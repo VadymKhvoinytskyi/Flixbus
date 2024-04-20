@@ -1,4 +1,5 @@
 {
     "departure": ["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"],
-    "arrival": ["Amsterdam", "Luxembourg", "Rotterdam", "Paris", "Brussel"]
+    "arrival": ["Amsterdam", "Luxembourg", "Rotterdam", "Paris", "Brussel"],
+    "dates": ["25.05.2024", "26.05.2024"]
 }

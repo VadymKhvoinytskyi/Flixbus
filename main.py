@@ -4,16 +4,21 @@ from pathlib import Path
 
 import sqlite3
 import pandas as pd
-from update_db import ask_add_data
+# from update_db import ask_add_data
 
 def get_trips(departure_names: list[str], 
               arrival_names: list[str], 
-              dates: list[str]) -> list[dict]:
+              dates: list[str],
+              include_after_midnight_rides: int = 1,
+              verbose: bool=False
+) -> list[dict]:
     
     dict_uuids = get_uuids_from_db(departure_names + arrival_names)
     result_trips = []
-    i = 0
-    n = len(departure_names) * len(arrival_names) * len(dates)
+    
+    if verbose:
+        i = 0
+        n = len(departure_names) * len(arrival_names) * len(dates)
 
     for arrival_name in arrival_names:
         for departure_name in departure_names:
@@ -25,11 +30,13 @@ def get_trips(departure_names: list[str],
                     f"search?from_city_id={departure_uuid}&"
                     f"to_city_id={arrival_uuid}&departure_date={date}"
                     f"&products=%7B%22adult%22%3A2%7D&currency=EUR&locale=en&"
-                    f"search_by=cities&include_after_midnight_rides=1"
+                    f"search_by=cities&"
+                    f"include_after_midnight_rides={include_after_midnight_rides}"
                 )
                 response = requests.get(url)
-                print(f"{'#' * int(i // (n / 20))}")
-                i += 1
+                if verbose:
+                    print(f"{'#' * int(i // (n / 20))}")
+                    i += 1
 
                 if response.status_code != 200:
                     print(response.reason)
@@ -47,9 +54,9 @@ def get_trips(departure_names: list[str],
                         'departure': departure_name,
                         'arrival' : arrival_name,
                         'price' : results_json[key]['price']['average'],
-                        'departure date' : results_json[key]['departure']['date'],
-                        'arrival date' : results_json[key]['arrival']['date'],
-                        'transfer type' : results_json[key]['transfer_type_key'],
+                        'departure_date' : results_json[key]['departure']['date'],
+                        'arrival_date' : results_json[key]['arrival']['date'],
+                        'transfer_type' : results_json[key]['transfer_type_key'],
                         'link' : (
                             f"https://shop.flixbus.ua/search?"
                             f"departureCity={departure_uuid}&"
