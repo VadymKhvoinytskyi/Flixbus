@@ -26,3 +26,5 @@ def ask_add_data():
     add_data(response_uuids)
     print(f'Were added the following data: \n {response_uuids}')
 
+if __name__ == '__main__':
+    ask_add_data()

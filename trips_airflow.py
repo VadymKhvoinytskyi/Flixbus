@@ -78,20 +78,34 @@ def clean_csv_file(file_name: str='latest.csv') -> None:
         with open(file_name, 'w') as file_write:
             file_write.write(schema)
 
+def sqlite_insert_ignore(table, cur, keys, data_iter):
+    for row in data_iter:
+        print(tuple(row))
+        query = f"INSERT OR IGNORE INTO {table.name} VALUES {tuple(row)}"
+        print(query)
+        cur.execute(query)
+
 def push_latest_trips_enriched_to_db(
     file_name: str='latest_enriched.csv',
     db='trips.db'
-):
+) -> None:
     df = pd.read_csv(file_name,  sep=',', engine='python')
-    df.to_sql(name='Trips', con=sqlite3.connect(db), if_exists='append', index=False)
+    df.to_sql(
+        name='Trips', 
+        con=sqlite3.connect(db), 
+        if_exists='append', 
+        index=False,
+        chunksize=1,
+        method=sqlite_insert_ignore
+    )
 
 
-print('run download trips')
+'''print('run download trips')
 download_trips()
 print('run create calculates fields')
 create_calculated_fields()
 print('run clean csv file for latest trips')
-clean_csv_file(file_name='latest.csv')
+clean_csv_file(file_name='latest.csv')'''
 print('run push enriched trips to db')
 push_latest_trips_enriched_to_db()
 print('run clean csv file for latest trips enriched')

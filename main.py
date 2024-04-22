@@ -22,6 +22,7 @@ def get_trips(departure_names: list[str],
 
     for arrival_name in arrival_names:
         for departure_name in departure_names:
+            print(f"Getting data for {arrival_name} - {departure_name}")
             arrival_uuid = dict_uuids[arrival_name]
             departure_uuid = dict_uuids[departure_name]
             for date in dates:
