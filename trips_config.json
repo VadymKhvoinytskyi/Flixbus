@@ -1,5 +1,6 @@
 {
-    "departure": ["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen"],
-    "arrival": ["Amsterdam", "Rotterdam", "London", "Copenhagen", "Brussel", "Stockholm", "Barcelona", "Madrid"],
-    "dates": "27.04.2024 - 28.04.2024, 04.05.2024 - 05.05.2024, 11.05.2024 - 12.05.2024, 18.05.2024 - 19.05.2024, 25.05.2024 - 26.05.2024, 04.06.2024 - 05.06.2024"
+    "departure": ["Duesseldorf", "Moenchengladbach", "Cologne", "Aachen", "Duisburg"],
+    "arrival": ["Gent"],
+    "arrival_old": ["Amsterdam", "Rotterdam", "London", "Copenhagen", "Brussel", "Stockholm", "Barcelona", "Madrid"],
+    "dates": "25.05.2024 - 16.06.2024"
 }

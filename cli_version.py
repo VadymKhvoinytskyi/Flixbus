@@ -1,4 +1,5 @@
 import click
+from datetime import datetime
 # from update_db import ask_add_data
 from main import get_trips, get_cities_from_str, get_dates # , get_uuids_from_db
 
@@ -25,7 +26,11 @@ def main(departure: str, arrival: str, dates: str, link: bool) -> None:
             click.echo(list(trip.values())[0:7])
             click.echo('\n')
         else:
-            click.echo(list(trip.values())[0:6])
+            trips = list(trip.values())[0:6]
+            time_format = '%Y-%m-%dT%H:%m:%S+03:00'
+            time_format = 'ISO 8601'
+            duration = datetime.fromisoformat(trips[4]) - datetime.fromisoformat(trips[3])
+            click.echo(trips + [round(duration.days * 24 + duration.seconds / 3600, 2)])
             click.echo('\n')
 
 if __name__ == "__main__":

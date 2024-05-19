@@ -4,6 +4,7 @@ import sqlite3
 
 import pandas as pd
 
+
 # from update_db import ask_add_data
 from main import get_trips, get_dates # , get_uuids_from_db, get_cities_from_str 
 
@@ -80,9 +81,7 @@ def clean_csv_file(file_name: str='latest.csv') -> None:
 
 def sqlite_insert_ignore(table, cur, keys, data_iter):
     for row in data_iter:
-        print(tuple(row))
         query = f"INSERT OR IGNORE INTO {table.name} VALUES {tuple(row)}"
-        print(query)
         cur.execute(query)
 
 def push_latest_trips_enriched_to_db(
@@ -90,6 +89,7 @@ def push_latest_trips_enriched_to_db(
     db='trips.db'
 ) -> None:
     df = pd.read_csv(file_name,  sep=',', engine='python')
+    print(df)
     df.to_sql(
         name='Trips', 
         con=sqlite3.connect(db), 
@@ -100,13 +100,41 @@ def push_latest_trips_enriched_to_db(
     )
 
 
-'''print('run download trips')
+print('run download trips')
 download_trips()
 print('run create calculates fields')
 create_calculated_fields()
 print('run clean csv file for latest trips')
-clean_csv_file(file_name='latest.csv')'''
+clean_csv_file(file_name='latest.csv')
 print('run push enriched trips to db')
 push_latest_trips_enriched_to_db()
 print('run clean csv file for latest trips enriched')
 clean_csv_file(file_name='latest_enriched.csv')
+
+
+airflow_implemented = False
+
+if airflow_implemented:
+
+    from airflow.models.dag import DAG
+    from airflow.operators.python import PythonOperator
+
+    with DAG(
+        dag_id='trip_planner'
+
+    ) as dag:
+
+        download_trips_po = PythonOperator(download_trips)
+        create_calculated_fields_po = PythonOperator(create_calculated_fields)
+        clean_csv_latest_file_po = PythonOperator(
+            clean_csv_file, op_kwargs={'file_name': 'latest.csv'}
+        )
+        push_latest_trips_enriched_to_db_po = PythonOperator(push_latest_trips_enriched_to_db)
+        clean_csv_latest_file_enriched_po = PythonOperator(
+            clean_csv_file, op_kwargs={'file_name': 'latest_enriched.csv'}
+        )
+
+        download_trips_po >> create_calculated_fields_po
+        create_calculated_fields_po >> clean_csv_latest_file_po
+        clean_csv_latest_file_po >> push_latest_trips_enriched_to_db_po
+        push_latest_trips_enriched_to_db_po >> clean_csv_latest_file_enriched_po
